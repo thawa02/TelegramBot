@@ -1,7 +1,6 @@
 import telebot
 import requests
 from bs4 import BeautifulSoup
-import urllib
 import tkn  #тут лежал токен
 
 
@@ -31,13 +30,13 @@ def get_text_messages(message):
 
 def give_fact(message, curr=["nils-bor-i-dom-s-truboj-s-pivom/"]):
     address = "https://zagge.ru/"
-    page = urllib.request.urlopen(address + curr[0]).read()
-    lst = page.split()
-    nxt = lst[lst.index(b'\xd0\xa4\xd0\x90\xd0\x9a\xd0\xa2\xd0\x9e\xd0\x92!</a>') - 1].decode()
-    curr[0] = nxt.split('"')[1]
 
     r = requests.get(address + curr[0])
     soup = BeautifulSoup(r.text, 'html.parser')
+    for info in soup.select('#main'):
+        nxt = info.select('.more-facts')[0]
+        curr[0] = nxt.get('href')
+
     for info in soup.select('#main'):
         fact = info.select('.af-description')[0].text
         fact = fact.split("Больше фактов")[0]
