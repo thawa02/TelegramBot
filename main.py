@@ -1,6 +1,6 @@
 import telebot
 import requests
-from bs4 import BeautifulSoup as BS
+from bs4 import BeautifulSoup
 import urllib
 import tkn  #тут лежал токен
 
@@ -26,24 +26,7 @@ def send(message):
 
 @bot.message_handler(content_types=['text'])
 def get_text_messages(message):
-    if message.text == "Привет" or message.text == "привет":
-        bot.send_message(message.from_user.id, "Привет!")
-        keyboard = telebot.types.InlineKeyboardMarkup()
-        key_yes = telebot.types.InlineKeyboardButton(text='Да', callback_data='yes')
-        keyboard.add(key_yes)  # добавляем кнопку в клавиатуру
-        key_no = telebot.types.InlineKeyboardButton(text='Нет', callback_data='no')
-        keyboard.add(key_no)
-        bot.send_message(message.from_user.id, text='Хочешь интересный факт?', reply_markup=keyboard)
-    else:
-        bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
-
-
-@bot.callback_query_handler(func=lambda call: True)
-def callback_worker(call):
-    if call.data == "yes":
-        give_fact(call.message)
-    elif call.data == "no":
-        bot.send_message(call.message.chat.id, "Ну как знаешь")
+    bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
 def give_fact(message, curr=["nils-bor-i-dom-s-truboj-s-pivom/"]):
@@ -54,12 +37,15 @@ def give_fact(message, curr=["nils-bor-i-dom-s-truboj-s-pivom/"]):
     curr[0] = nxt.split('"')[1]
 
     r = requests.get(address + curr[0])
-    html = BS(r.content, 'html.parser')
-    for info in html.select('#main'):
+    soup = BeautifulSoup(r.text, 'html.parser')
+    for info in soup.select('#main'):
         fact = info.select('.af-description')[0].text
         fact = fact.split("Больше фактов")[0]
+        image = info.select('.af-image-ratio')[0].img
+        src = image.get('src')
 
     bot.send_message(message.from_user.id, text=fact)
+    bot.send_photo(message.from_user.id, src)
 
 
 bot.polling(none_stop=True, interval=0)
