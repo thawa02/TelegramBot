@@ -3,9 +3,12 @@ from telebot import types
 import requests
 from bs4 import BeautifulSoup
 import tkn
+import tests
 
 
 bot = telebot.TeleBot(tkn.token)
+start_address = "nils-bor-i-dom-s-truboj-s-pivom/"
+site_address = "https://zagge.ru/"
 
 
 @bot.message_handler(commands=['start'])
@@ -38,12 +41,10 @@ def get_text_messages(message):
         bot.send_message(message.from_user.id, "Я тебя не понимаю. Напиши /help.")
 
 
-def send_fact(message, curr=["nils-bor-i-dom-s-truboj-s-pivom/"]):
+def send_fact(message, curr=[start_address]):
     """Оправляет пользователю факт и картинку"""
 
-    address = "https://zagge.ru/"
-
-    r = requests.get(address + curr[0])
+    r = requests.get(site_address + curr[0])
     soup = BeautifulSoup(r.text, 'html.parser')
 
     fact = get_fact(soup)
